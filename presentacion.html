@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Presentación</title>
+    <style>
+        /* Fondo transparente para que solo se vea tu video */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay-media {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Mantiene la proporción del video */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video con las propiedades necesarias para reproducción automática en Android -->
+    <video class="overlay-media" autoplay loop muted playsinline>
+        <source src="PRESEN_POTROS.webm" type="video/webm">
+        Tu navegador no soporta el formato de video.
+    </video>
+
+</body>
+</html>

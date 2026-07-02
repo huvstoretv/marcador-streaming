@@ -13,26 +13,26 @@
         .status { color: #00cc00; font-size: 12px; margin-bottom: 20px; font-weight: bold; }
         .container { width: 100%; max-width: 500px; background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #333; box-sizing: border-box;}
         .team-section { background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #444; }
-        .team-local { border-left-color: #0066cc; }
-        .team-visitor { border-left-color: #cc3333; }
+        .team-local { border-left-color: #006847; }
+        .team-visitor { border-left-color: #0066cc; }
         .team-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .current-score { font-size: 24px; background: #000; padding: 2px 10px; border-radius: 4px; color: #fff; }
         .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
         .btn { background: #333; color: white; border: 1px solid #444; padding: 12px 5px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; }
         .btn:active { background: #555; }
         .btn-minus { background: #552222; border-color: #663333; width: 100%; }
-        .btn-reset { width: 100%; background: #444422; border: 1px solid #555533; margin-top: 15px; padding: 15px;}
+        .btn-reset { width: 100%; background: #4169E1; border: 1px solid #555533; margin-top: 15px; padding: 15px;}
     </style>
 </head>
 <body>
 
-    <h1>🏈 CONTROL EN LA NUBE</h1>
+    <h1>🏈 HUVSTORE.TV 🏈</h1>
     <div class="status" id="conexion">🟢 Conectando a Firebase...</div>
 
     <div class="container">
         <!-- LOCAL -->
         <div class="team-section team-local">
-            <div class="team-title"><span>LOCAL</span><span class="current-score" id="view-local">00</span></div>
+            <div class="team-title"><span>POTROS AC</span><span class="current-score" id="view-local">00</span></div>
             <div class="btn-grid">
                 <button class="btn" onclick="modify('local', 6)">+6</button>
                 <button class="btn" onclick="modify('local', 3)">+3</button>
@@ -44,7 +44,7 @@
 
         <!-- VISITANTE -->
         <div class="team-section team-visitor">
-            <div class="team-title"><span>VISITANTE</span><span class="current-score" id="view-visitor">00</span></div>
+            <div class="team-title"><span>HALCONES UV</span><span class="current-score" id="view-visitor">00</span></div>
             <div class="btn-grid">
                 <button class="btn" onclick="modify('visitor', 6)">+6</button>
                 <button class="btn" onclick="modify('visitor', 3)">+3</button>

@@ -3,61 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overlay Streaming Nube - Letra Negra</title>
-    <!-- Importar la fuente Anton -->
+    <title>Overlay HUV Store.TV - Master Canvas</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     
-    <!-- SDK de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        html, body {
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100%;
-            background: transparent; 
-            overflow: hidden;
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
+        
+        /* El Lienzo Maestro de 1920x1080 */
+        #master-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1920px;
+            height: 1080px;
+            transform-origin: top left; /* Permite escalar el lienzo sin perder proporciones */
             font-family: 'Anton', sans-serif;
-            /* Se eliminó el borde (-webkit-text-stroke) por completo */
-        }
-        
-        .screen-container { 
-            position: relative; 
-            width: 100%; 
-            height: 100%; 
-        }
-        
-        .score-display {
-            position: absolute; 
-            bottom: 24px; 
-            font-size: 14pt; 
-            color: #000000; /* Color negro puro */
-            line-height: 1;
-            min-width: 60px; 
-            text-align: center;
         }
 
-        #score-local { 
-            left: 349px; 
-        }
+        /* Utilidades para posicionar de forma absoluta */
+        .layer { position: absolute; }
+        .dynamic-text { position: absolute; line-height: 1; text-align: center; }
+
+        /* =========================================
+           AJUSTES DE POSICIÓN (Basado en tu imagen)
+           ========================================= */
+           
+        /* PARTE SUPERIOR */
+        #huv-logo { top: 30px; right: 30px; opacity: 0.93; }
+        #onefa-cintillo { top: 30px; left: 30px; }
         
-        #score-visitor { 
-            right: 349px; 
+        #texto-cuarto {
+            top: 65px;       /* Ajusta hacia arriba o abajo */
+            left: 300px;     /* Ajusta a la izquierda o derecha para centrar en el cintillo blanco */
+            font-size: 28px;
+            color: #000000;  /* Letra negra para el cintillo blanco */
+            letter-spacing: 1px;
+        }
+
+        /* PARTE INFERIOR (LOWER THIRD) */
+        #marcador-base { bottom: 0px; left: 0px; width: 100%; text-align: center;} /* Contenedor de tu imagen PNG del lower third */
+        
+        /* Ajuste de los números del marcador */
+        .score-number {
+            bottom: 55px; /* Distancia desde el borde inferior */
+            font-size: 45px; /* Tamaño del número */
+            color: #000000;
+        }
+        #score-local { left: 560px; } /* Ajusta para que quede junto a POTROS AC */
+        #score-visitor { right: 560px; } /* Ajusta para que quede junto a HALCONES UV */
+
+        /* Ajuste de la Categoría (Espacio gris) */
+        #texto-categoria {
+            bottom: 12px; /* Posicionado en el pequeño espacio gris del fondo */
+            left: 50%;
+            transform: translateX(-50%); /* Centrado automático */
+            font-size: 22px;
+            color: #ffffff; /* Asumo letra blanca sobre fondo gris */
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
 
-    <div class="screen-container">
-        <div id="score-local" class="score-display">00</div>
-        <div id="score-visitor" class="score-display">00</div>
+    <div id="master-canvas">
+        
+        <!-- =========================================
+             CAPA 1: IMÁGENES ESTÁTICAS (Tus PNGs)
+             Sustituye "tu_imagen.png" por los nombres reales de tus archivos en GitHub
+             ========================================= -->
+             
+        <!-- Top Derecho -->
+        <img src="LOGO HUVSTORETV.png" id="huv-logo" class="layer" alt="HUV Store">
+        
+        <!-- Top Izquierdo -->
+        <img src="ONEFA CINTILLO.png" id="onefa-cintillo" class="layer" alt="ONEFA">
+        
+        <!-- Base Inferior Completa (Logos, VS, Nombres y bloque gris) -->
+        <!-- Si tienes el lower third como una sola imagen del ancho de la pantalla: -->
+        <div id="marcador-base" class="layer">
+            <img src="BAJOTERCIO.png" alt="Lower Third">
+        </div>
+
+
+        <!-- =========================================
+             CAPA 2: TEXTOS DINÁMICOS (Firebase)
+             ========================================= -->
+             
+        <!-- Cuarto (Sobre el cintillo de ONEFA) -->
+        <div id="texto-cuarto" class="dynamic-text">1ER CUARTO</div>
+
+        <!-- Marcadores (A los lados de los nombres) -->
+        <div id="score-local" class="dynamic-text score-number">00</div>
+        <div id="score-visitor" class="dynamic-text score-number">00</div>
+
+        <!-- Categoría (En el bloque gris) -->
+        <div id="texto-categoria" class="dynamic-text">CATEGORÍA INFANTIL</div>
+        
     </div>
 
     <script>
+        // --- 1. SCRIPT DE ESCALADO AUTOMÁTICO (No tocar) ---
+        // Esto hace que tu lienzo de 1920x1080 encaje perfecto sin importar la resolución de CameraFi
+        function resizeCanvas() {
+            const canvas = document.getElementById('master-canvas');
+            const scale = window.innerWidth / 1920;
+            canvas.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- 2. SCRIPT DE FIREBASE ---
         // 🚨 PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE 🚨
         const firebaseConfig = {
             apiKey: "AIzaSyA-tweq9EGXY8yk_R0Y3nlfTPc8JMUQ5AM",
@@ -74,15 +134,16 @@
         const db = firebase.database();
         const marcadorRef = db.ref('marcador');
 
-        // Escuchar los datos en tiempo real
         marcadorRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                let loc = data.local.toString().padStart(2, '0');
-                let vis = data.visitor.toString().padStart(2, '0');
+                // Actualizar números
+                document.getElementById('score-local').innerText = (data.local || 0).toString().padStart(2, '0');
+                document.getElementById('score-visitor').innerText = (data.visitor || 0).toString().padStart(2, '0');
                 
-                document.getElementById('score-local').innerText = loc;
-                document.getElementById('score-visitor').innerText = vis;
+                // Actualizar textos
+                document.getElementById('texto-cuarto').innerText = data.cuarto || "1ER CUARTO";
+                document.getElementById('texto-categoria').innerText = data.categoria || "CATEGORÍA INFANTIL";
             }
         });
     </script>

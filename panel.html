@@ -3,62 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - Marcador NUBE</title>
-    <!-- SDK de Firebase (Versión compatible fácil de usar) -->
+    <title>Panel de Control HUV Store.TV</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: -apple-system, sans-serif; background-color: #121212; color: #e0e0e0; padding: 20px; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        h1 { color: #ffaa00; font-size: 24px; margin-bottom: 5px; text-align: center;}
-        .status { color: #00cc00; font-size: 12px; margin-bottom: 20px; font-weight: bold; }
-        .container { width: 100%; max-width: 500px; background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #333; box-sizing: border-box;}
-        .team-section { background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #444; }
-        .team-local { border-left-color: #006847; }
-        .team-visitor { border-left-color: #0066cc; }
+        h1 { color: #ffffff; font-size: 24px; margin-bottom: 5px; text-align: center;}
+        .status { color: #6def09; font-size: 12px; margin-bottom: 20px; font-weight: bold; }
+        .container { width: 100%; max-width: 500px; background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; box-sizing: border-box;}
+        
+        /* Estilos de los Marcadores */
+        .team-section { background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #444; }
+        .team-local { border-left-color: #135504; }
+        .team-visitor { border-left-color: #0715d7; }
         .team-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .current-score { font-size: 24px; background: #000; padding: 2px 10px; border-radius: 4px; color: #fff; }
         .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
         .btn { background: #333; color: white; border: 1px solid #444; padding: 12px 5px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; }
-        .btn:active { background: #555; }
-        .btn-minus { background: #552222; border-color: #663333; width: 100%; }
-        .btn-reset { width: 100%; background: #4169E1; border: 1px solid #555533; margin-top: 15px; padding: 15px;}
+        .btn:active { background: #302f2f; }
+        .btn-minus { background: #17ba45; border-color: #2578ff; width: 100%; }
+        
+        /* Estilos de Textos Dinámicos (Cuarto y Categoría) */
+        .select-group { margin-bottom: 15px; }
+        .select-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #aaa; }
+        select { width: 100%; padding: 10px; background: #333; color: white; border: 1px solid #555; border-radius: 6px; font-size: 16px; }
+        
+        .btn-reset { width: 100%; background: #100f3f; border: 1px solid #c0c0c0; margin-top: 15px; padding: 15px; font-weight: bold; color: white;}
     </style>
 </head>
 <body>
 
-    <h1>🏈 HUVSTORE.TV 🏈</h1>
+    <h1>🏈 HUVSTORETV 🏈</h1>
     <div class="status" id="conexion">🟢 Conectando a Firebase...</div>
 
     <div class="container">
+        <!-- DATOS DEL PARTIDO -->
+        <div class="select-group">
+            <label>Cuarto de Juego:</label>
+            <select id="cuarto-select" onchange="updateText('cuarto', this.value)">
+                <option value="1ER CUARTO">1ER CUARTO</option>
+                <option value="2DO CUARTO">2DO CUARTO</option>
+                <option value="3ER CUARTO">3ER CUARTO</option>
+                <option value="4TO CUARTO">4TO CUARTO</option>
+                <option value="MEDIO TIEMPO">MEDIO TIEMPO</option>
+                <option value="TIEMPO EXTRA">TIEMPO EXTRA</option>
+                <option value="FINAL">FINAL</option>
+            </select>
+        </div>
+
+        <div class="select-group">
+            <label>Categoría:</label>
+            <select id="categoria-select" onchange="updateText('categoria', this.value)">
+                <option value="CATEGORÍA PRE INFANTIL">CATEGORÍA PRE INFANTIL</option>
+                <option value="CATEGORÍA ESPECIAL">CATEGORÍA ESPECIAL</option>
+                <option value="CATEGORÍA AA">CATEGORÍA AA</option>
+                <option value="CATEGORÍA AAA">CATEGORÍA AAA</option>
+            </select>
+        </div>
+
         <!-- LOCAL -->
         <div class="team-section team-local">
-            <div class="team-title"><span>POTROS AC</span><span class="current-score" id="view-local">00</span></div>
+            <div class="team-title"><span>LOCAL (POTROS)</span><span class="current-score" id="view-local">00</span></div>
             <div class="btn-grid">
-                <button class="btn" onclick="modify('local', 6)">+6</button>
-                <button class="btn" onclick="modify('local', 3)">+3</button>
-                <button class="btn" onclick="modify('local', 2)">+2</button>
-                <button class="btn" onclick="modify('local', 1)">+1</button>
+                <button class="btn" onclick="modifyScore('local', 6)">+6</button>
+                <button class="btn" onclick="modifyScore('local', 3)">+3</button>
+                <button class="btn" onclick="modifyScore('local', 2)">+2</button>
+                <button class="btn" onclick="modifyScore('local', 1)">+1</button>
             </div>
-            <button class="btn btn-minus" onclick="modify('local', -1)">Corregir (-1)</button>
+            <button class="btn btn-minus" onclick="modifyScore('local', -1)">Corregir (-1)</button>
         </div>
 
         <!-- VISITANTE -->
         <div class="team-section team-visitor">
-            <div class="team-title"><span>HALCONES UV</span><span class="current-score" id="view-visitor">00</span></div>
+            <div class="team-title"><span>VISITANTE (HALCONES)</span><span class="current-score" id="view-visitor">00</span></div>
             <div class="btn-grid">
-                <button class="btn" onclick="modify('visitor', 6)">+6</button>
-                <button class="btn" onclick="modify('visitor', 3)">+3</button>
-                <button class="btn" onclick="modify('visitor', 2)">+2</button>
-                <button class="btn" onclick="modify('visitor', 1)">+1</button>
+                <button class="btn" onclick="modifyScore('visitor', 6)">+6</button>
+                <button class="btn" onclick="modifyScore('visitor', 3)">+3</button>
+                <button class="btn" onclick="modifyScore('visitor', 2)">+2</button>
+                <button class="btn" onclick="modifyScore('visitor', 1)">+1</button>
             </div>
-            <button class="btn btn-minus" onclick="modify('visitor', -1)">Corregir (-1)</button>
+            <button class="btn btn-minus" onclick="modifyScore('visitor', -1)">Corregir (-1)</button>
         </div>
 
-        <button class="btn btn-reset" onclick="resetScores()">Reiniciar Todo (00 - 00)</button>
+        <button class="btn btn-reset" onclick="resetAll()">Reiniciar Todo</button>
     </div>
 
     <script>
-        // 🚨 REEMPLAZA ESTO CON LOS DATOS DE TU FIREBASE 🚨
+        // 🚨 PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE 🚨
         const firebaseConfig = {
             apiKey: "AIzaSyA-tweq9EGXY8yk_R0Y3nlfTPc8JMUQ5AM",
             authDomain: "marcador-transmisiones.firebaseapp.com",
@@ -70,41 +101,42 @@
             measurementId: "G-64VX9TNRTR"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const marcadorRef = db.ref('marcador');
 
-        let currentScores = { local: 0, visitor: 0 };
+        let currentData = { local: 0, visitor: 0, cuarto: "1ER CUARTO", categoria: "CATEGORÍA INFANTIL" };
 
-        // Escuchar los datos en tiempo real para mostrar en pantalla
         marcadorRef.on('value', (snapshot) => {
             document.getElementById('conexion').innerText = "🟢 Conectado y Sincronizado";
             const data = snapshot.val();
             if (data) {
-                currentScores = data;
-                document.getElementById('view-local').innerText = currentScores.local.toString().padStart(2, '0');
-                document.getElementById('view-visitor').innerText = currentScores.visitor.toString().padStart(2, '0');
+                currentData = data;
+                document.getElementById('view-local').innerText = (data.local || 0).toString().padStart(2, '0');
+                document.getElementById('view-visitor').innerText = (data.visitor || 0).toString().padStart(2, '0');
+                if(data.cuarto) document.getElementById('cuarto-select').value = data.cuarto;
+                if(data.categoria) document.getElementById('categoria-select').value = data.categoria;
             }
         });
 
-        // Modificar puntos
-        function modify(team, val) {
-            let newScore = currentScores[team] + val;
+        function modifyScore(team, val) {
+            let newScore = (currentData[team] || 0) + val;
             if (newScore < 0) newScore = 0;
             if (newScore > 99) newScore = 99;
-            
-            marcadorRef.update({
-                [team]: newScore
-            });
+            marcadorRef.update({ [team]: newScore });
         }
 
-        // Reiniciar
-        function resetScores() {
-            if (confirm('¿Seguro que deseas reiniciar el marcador a 00-00?')) {
+        function updateText(field, value) {
+            marcadorRef.update({ [field]: value });
+        }
+
+        function resetAll() {
+            if (confirm('¿Seguro que deseas reiniciar el partido?')) {
                 marcadorRef.set({
                     local: 0,
-                    visitor: 0
+                    visitor: 0,
+                    cuarto: "1ER CUARTO",
+                    categoria: "CATEGORÍA INFANTIL"
                 });
             }
         }

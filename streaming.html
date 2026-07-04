@@ -3,122 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overlay HUV Store.TV - Master Canvas</title>
+    <title>Master Canvas - HUV Store.TV</title>
+    
+    <!-- Fuente para los números -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
+        /* Fondo base transparente */
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
         
-        /* El Lienzo Maestro de 1920x1080 */
+        /* Estructura del Switcher de Escenas */
+        .escena {
+            display: none; /* Todo oculto por defecto */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* =========================================
+           ESTILOS DE LA ESCENA 1: MARCADOR (1920x1080)
+           ========================================= */
         #master-canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 1920px;
             height: 1080px;
-            transform-origin: top left; /* Permite escalar el lienzo sin perder proporciones */
+            transform-origin: top left;
             font-family: 'Anton', sans-serif;
         }
-
-        /* Utilidades para posicionar de forma absoluta */
         .layer { position: absolute; }
         .dynamic-text { position: absolute; line-height: 1; text-align: center; }
 
-        /* =========================================
-           AJUSTES DE POSICIÓN (Basado en tu imagen)
-           ========================================= */
-           
-        /* PARTE SUPERIOR */
+        /* Ajustes de posición del marcador */
         #huv-logo { top: 30px; right: 30px; opacity: 0.93; }
         #onefa-cintillo { top: 30px; left: 30px; }
         
         #texto-cuarto {
-            top: 65px;       /* Ajusta hacia arriba o abajo */
-            left: 300px;     /* Ajusta a la izquierda o derecha para centrar en el cintillo blanco */
+            top: 65px;       
+            left: 300px;     
             font-size: 28px;
-            color: #000000;  /* Letra negra para el cintillo blanco */
+            color: #000000;  
             letter-spacing: 1px;
         }
 
-        /* PARTE INFERIOR (LOWER THIRD) */
-        #marcador-base { bottom: 0px; left: 0px; width: 100%; text-align: center;} /* Contenedor de tu imagen PNG del lower third */
+        #marcador-base { bottom: 0px; left: 0px; width: 100%; text-align: center;}
         
-        /* Ajuste de los números del marcador */
-        .score-number {
-            bottom: 55px; /* Distancia desde el borde inferior */
-            font-size: 45px; /* Tamaño del número */
-            color: #000000;
-        }
-        #score-local { left: 560px; } /* Ajusta para que quede junto a POTROS AC */
-        #score-visitor { right: 560px; } /* Ajusta para que quede junto a HALCONES UV */
+        .score-number { bottom: 55px; font-size: 45px; color: #000000; }
+        #score-local { left: 560px; }
+        #score-visitor { right: 560px; }
 
-        /* Ajuste de la Categoría (Espacio gris) */
         #texto-categoria {
-            bottom: 12px; /* Posicionado en el pequeño espacio gris del fondo */
+            bottom: 12px;
             left: 50%;
-            transform: translateX(-50%); /* Centrado automático */
+            transform: translateX(-50%);
             font-size: 22px;
-            color: #ffffff; /* Asumo letra blanca sobre fondo gris */
+            color: #ffffff;
             letter-spacing: 2px;
+        }
+
+        /* =========================================
+           ESTILOS DE LA ESCENA 2: TEXTOS INTRO
+           ========================================= */
+        #intro-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1920px;
+            height: 1080px;
+            transform-origin: top left;
+        }
+
+        #texto-categoria-intro {
+            position: absolute;
+            top: 450px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 45px;
+            color: #ffffff;
+            font-family: 'Anton', sans-serif;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            width: 100%;
+            text-align: center;
+        }
+
+        .score-intro {
+            position: absolute;
+            top: 865px; /* Altura calculada en base a tu archivo PRESENTA INFANTILES.jpg */
+            font-family: 'Anton', sans-serif;
+            font-size: 60px; 
+            color: #ffffff;
+            -webkit-text-stroke: 2px #000000;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            width: 100px;
+            text-align: center;
+        }
+        #score-intro-local { left: 600px; }
+        #score-intro-visitor { right: 600px; }
+
+        /* =========================================
+           ESTILOS DE LOS VIDEOS
+           ========================================= */
+        .overlay-media {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 </head>
 <body>
 
-    <div id="master-canvas">
-        
-        <!-- =========================================
-             CAPA 1: IMÁGENES ESTÁTICAS (Tus PNGs)
-             Sustituye "tu_imagen.png" por los nombres reales de tus archivos en GitHub
-             ========================================= -->
-             
-        <!-- Top Derecho -->
-        <img src="LOGO HUVSTORETV.png" id="huv-logo" class="layer" alt="HUV Store">
-        
-        <!-- Top Izquierdo -->
-        <img src="ONEFA CINTILLO.png" id="onefa-cintillo" class="layer" alt="ONEFA">
-        
-        <!-- Base Inferior Completa (Logos, VS, Nombres y bloque gris) -->
-        <!-- Si tienes el lower third como una sola imagen del ancho de la pantalla: -->
-        <div id="marcador-base" class="layer">
-            <img src="BAJOTERCIO.png" alt="Lower Third">
+    <!-- ESCENA 1: MARCADOR Y GRÁFICOS -->
+    <div id="escena-marcador" class="escena">
+        <div id="master-canvas">
+            <img src="LOGO HUVSTORETV.png" id="huv-logo" class="layer" alt="HUV Store">
+            <img src="ONEFA CINTILLO.png" id="onefa-cintillo" class="layer" alt="ONEFA">
+            <div id="marcador-base" class="layer">
+                <img src="BAJOTERCIO.png" alt="Lower Third">
+            </div>
+
+            <div id="texto-cuarto" class="dynamic-text">1ER CUARTO</div>
+            <div id="score-local" class="dynamic-text score-number">00</div>
+            <div id="score-visitor" class="dynamic-text score-number">00</div>
+            <div id="texto-categoria" class="dynamic-text">CATEGORÍA INFANTIL</div>
         </div>
+    </div>
 
-
-        <!-- =========================================
-             CAPA 2: TEXTOS DINÁMICOS (Firebase)
-             ========================================= -->
-             
-        <!-- Cuarto (Sobre el cintillo de ONEFA) -->
-        <div id="texto-cuarto" class="dynamic-text">1ER CUARTO</div>
-
-        <!-- Marcadores (A los lados de los nombres) -->
-        <div id="score-local" class="dynamic-text score-number">00</div>
-        <div id="score-visitor" class="dynamic-text score-number">00</div>
-
-        <!-- Categoría (En el bloque gris) -->
-        <div id="texto-categoria" class="dynamic-text">CATEGORÍA INFANTIL</div>
+    <!-- ESCENA 2: INTRO POTROS -->
+    <div id="escena-presentacion" class="escena">
+        <video id="vid-presentacion" class="overlay-media" loop muted playsinline>
+            <source src="PRESEN_POTROS.webm" type="video/webm">
+        </video>
         
+        <!-- Lienzo superpuesto para la Intro -->
+        <div id="intro-canvas">
+            <div id="texto-categoria-intro">CATEGORÍA INFANTIL</div>
+            <div id="score-intro-local" class="score-intro">00</div>
+            <div id="score-intro-visitor" class="score-intro">00</div>
+        </div>
+    </div>
+
+    <!-- ESCENA 3: PUBLICIDAD -->
+    <div id="escena-publicidad" class="escena">
+        <video id="vid-publicidad" class="overlay-media" loop muted playsinline>
+            <source src="PROMO.WEBM" type="video/webm">
+        </video>
+    </div>
+
+    <!-- ESCENA 4: TOUCH POTROS -->
+    <div id="escena-touch-potros" class="escena">
+        <video id="vid-touch-potros" class="overlay-media" loop muted playsinline>
+            <source src="TOUCH_POTROS.WEBM" type="video/webm">
+        </video>
+    </div>
+
+    <!-- ESCENA 5: TOUCH HUV -->
+    <div id="escena-touch-huv" class="escena">
+        <video id="vid-touch-huv" class="overlay-media" loop muted playsinline>
+            <source src="TOUCH_HUV.WEBM" type="video/webm">
+        </video>
     </div>
 
     <script>
-        // --- 1. SCRIPT DE ESCALADO AUTOMÁTICO (No tocar) ---
-        // Esto hace que tu lienzo de 1920x1080 encaje perfecto sin importar la resolución de CameraFi
+        // --- ESCALADO AUTOMÁTICO DEL MARCADOR Y DE LA INTRO ---
         function resizeCanvas() {
-            const canvas = document.getElementById('master-canvas');
             const scale = window.innerWidth / 1920;
-            canvas.style.transform = `scale(${scale})`;
+            
+            const canvasMaster = document.getElementById('master-canvas');
+            if(canvasMaster) {
+                canvasMaster.style.transform = `scale(${scale})`;
+            }
+            
+            const canvasIntro = document.getElementById('intro-canvas');
+            if(canvasIntro) {
+                canvasIntro.style.transform = `scale(${scale})`;
+            }
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // --- 2. SCRIPT DE FIREBASE ---
-        // 🚨 PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE 🚨
+        // --- CONEXIÓN A FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyA-tweq9EGXY8yk_R0Y3nlfTPc8JMUQ5AM",
             authDomain: "marcador-transmisiones.firebaseapp.com",
@@ -134,18 +209,60 @@
         const db = firebase.database();
         const marcadorRef = db.ref('marcador');
 
+        // --- LÓGICA DE CONTROL ---
+        let escenaActual = "";
+
         marcadorRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // Actualizar números
+                // 1. Actualizar textos y números del marcador en la ESCENA 1
                 document.getElementById('score-local').innerText = (data.local || 0).toString().padStart(2, '0');
                 document.getElementById('score-visitor').innerText = (data.visitor || 0).toString().padStart(2, '0');
-                
-                // Actualizar textos
                 document.getElementById('texto-cuarto').innerText = data.cuarto || "1ER CUARTO";
                 document.getElementById('texto-categoria').innerText = data.categoria || "CATEGORÍA INFANTIL";
+
+                // 2. Actualizar textos y números en la ESCENA 2 (Intro)
+                const scoreLocalIntro = document.getElementById('score-intro-local');
+                const scoreVisitorIntro = document.getElementById('score-intro-visitor');
+                const categoriaIntro = document.getElementById('texto-categoria-intro');
+                
+                if(scoreLocalIntro) scoreLocalIntro.innerText = (data.local || 0).toString().padStart(2, '0');
+                if(scoreVisitorIntro) scoreVisitorIntro.innerText = (data.visitor || 0).toString().padStart(2, '0');
+                if(categoriaIntro) categoriaIntro.innerText = data.categoria || "CATEGORÍA INFANTIL";
+
+                // 3. Lógica del Switcher de Escenas
+                const nuevaEscena = data.escenaActiva || 'marcador';
+                
+                if (nuevaEscena !== escenaActual) {
+                    cambiarEscenaVisual(nuevaEscena);
+                    escenaActual = nuevaEscena;
+                }
             }
         });
+
+        function cambiarEscenaVisual(nombreEscena) {
+            document.querySelectorAll('.escena').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('video').forEach(v => v.pause());
+
+            if (nombreEscena !== 'oculto') {
+                const cajaEscena = document.getElementById('escena-' + nombreEscena);
+                if(cajaEscena) {
+                    cajaEscena.style.display = 'block';
+                    
+                    const videoElement = cajaEscena.querySelector('video');
+                    if (videoElement) {
+                        videoElement.currentTime = 0;
+                        let playPromise = videoElement.play();
+                        
+                        if (playPromise !== undefined) {
+                            playPromise.catch(error => {
+                                console.log("El autoplay fue bloqueado. Asegúrate de que muted esté activado.");
+                            });
+                        }
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html>

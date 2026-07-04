@@ -8,11 +8,21 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: -apple-system, sans-serif; background-color: #121212; color: #e0e0e0; padding: 20px; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        h1 { color: #ffffff; font-size: 24px; margin-bottom: 5px; text-align: center;}
-        .status { color: #6def09; font-size: 12px; margin-bottom: 20px; font-weight: bold; }
+        h1 { color: #ffaa00; font-size: 24px; margin-bottom: 5px; text-align: center;}
+        .status { color: #00cc00; font-size: 12px; margin-bottom: 20px; font-weight: bold; }
         .container { width: 100%; max-width: 500px; background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; box-sizing: border-box;}
         
-        /* Estilos de los Marcadores */
+        /* =======================================
+           NUEVO: ESTILOS DEL SWITCHER DE ESCENAS 
+           ======================================= */
+        .scene-section { background: #111; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 2px solid #444; }
+        .scene-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #fff; text-align: center; letter-spacing: 1px; }
+        .scene-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-scene { background: #333; color: white; border: 2px solid #555; padding: 15px 10px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .btn-scene.active { background: #cc0000; border-color: #ff3333; box-shadow: 0 0 15px rgba(204,0,0,0.6); color: white; }
+        .btn-scene:active { transform: scale(0.95); }
+
+        /* Estilos de los Marcadores y Textos (Igual que ayer) */
         .team-section { background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #444; }
         .team-local { border-left-color: #135504; }
         .team-visitor { border-left-color: #0715d7; }
@@ -21,7 +31,7 @@
         .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
         .btn { background: #333; color: white; border: 1px solid #444; padding: 12px 5px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; }
         .btn:active { background: #302f2f; }
-        .btn-minus { background: #17ba45; border-color: #2578ff; width: 100%; }
+        .btn-minus { background: #c8c244; border-color: #2578ff; width: 100%; }
         
         /* Estilos de Textos Dinámicos (Cuarto y Categoría) */
         .select-group { margin-bottom: 15px; }
@@ -37,6 +47,20 @@
     <div class="status" id="conexion">🟢 Conectando a Firebase...</div>
 
     <div class="container">
+        
+        <!-- NUEVO: SWITCHER DE ESCENAS -->
+        <div class="scene-section">
+            <div class="scene-title">🔴 EN VIVO (SWITCHER)</div>
+            <div class="scene-grid">
+                <button id="btn-marcador" class="btn-scene" onclick="cambiarEscena('marcador')">Marcador / Gráficos</button>
+                <button id="btn-presentacion" class="btn-scene" onclick="cambiarEscena('presentacion')">PRESENTACIÓN</button>
+                <button id="btn-touch-potros" class="btn-scene" onclick="cambiarEscena('touch-potros')">Touch Potros</button>
+                <button id="btn-touch-huv" class="btn-scene" onclick="cambiarEscena('touch-huv')">Touch HUV</button>
+                <button id="btn-publicidad" class="btn-scene" onclick="cambiarEscena('publicidad')">X ZONE</button>
+                <button id="btn-oculto" class="btn-scene" onclick="cambiarEscena('oculto')">Ocultar Todo</button>
+            </div>
+        </div>
+
         <!-- DATOS DEL PARTIDO -->
         <div class="select-group">
             <label>Cuarto de Juego:</label>
@@ -63,7 +87,7 @@
 
         <!-- LOCAL -->
         <div class="team-section team-local">
-            <div class="team-title"><span>LOCAL (POTROS)</span><span class="current-score" id="view-local">00</span></div>
+            <div class="team-title"><span>POTROS AC</span><span class="current-score" id="view-local">00</span></div>
             <div class="btn-grid">
                 <button class="btn" onclick="modifyScore('local', 6)">+6</button>
                 <button class="btn" onclick="modifyScore('local', 3)">+3</button>
@@ -75,7 +99,7 @@
 
         <!-- VISITANTE -->
         <div class="team-section team-visitor">
-            <div class="team-title"><span>VISITANTE (HALCONES)</span><span class="current-score" id="view-visitor">00</span></div>
+            <div class="team-title"><span>HALCONES UV</span><span class="current-score" id="view-visitor">00</span></div>
             <div class="btn-grid">
                 <button class="btn" onclick="modifyScore('visitor', 6)">+6</button>
                 <button class="btn" onclick="modifyScore('visitor', 3)">+3</button>
@@ -85,7 +109,7 @@
             <button class="btn btn-minus" onclick="modifyScore('visitor', -1)">Corregir (-1)</button>
         </div>
 
-        <button class="btn btn-reset" onclick="resetAll()">Reiniciar Todo</button>
+        <button class="btn btn-reset" onclick="resetAll()">Reiniciar Marcador</button>
     </div>
 
     <script>
@@ -105,20 +129,34 @@
         const db = firebase.database();
         const marcadorRef = db.ref('marcador');
 
-        let currentData = { local: 0, visitor: 0, cuarto: "1ER CUARTO", categoria: "CATEGORÍA INFANTIL" };
+        let currentData = { local: 0, visitor: 0, cuarto: "1ER CUARTO", categoria: "CATEGORÍA INFANTIL", escenaActiva: "marcador" };
 
         marcadorRef.on('value', (snapshot) => {
             document.getElementById('conexion').innerText = "🟢 Conectado y Sincronizado";
             const data = snapshot.val();
             if (data) {
                 currentData = data;
+                
+                // Actualizar marcadores y textos
                 document.getElementById('view-local').innerText = (data.local || 0).toString().padStart(2, '0');
                 document.getElementById('view-visitor').innerText = (data.visitor || 0).toString().padStart(2, '0');
                 if(data.cuarto) document.getElementById('cuarto-select').value = data.cuarto;
                 if(data.categoria) document.getElementById('categoria-select').value = data.categoria;
+
+                // Actualizar botonera visualmente (poner en ROJO el botón activo)
+                const escenaActual = data.escenaActiva || 'marcador';
+                document.querySelectorAll('.btn-scene').forEach(btn => btn.classList.remove('active'));
+                const botonActivo = document.getElementById('btn-' + escenaActual);
+                if(botonActivo) botonActivo.classList.add('active');
             }
         });
 
+        // NUEVA FUNCIÓN: Cambiar Escena
+        function cambiarEscena(nombreEscena) {
+            marcadorRef.update({ escenaActiva: nombreEscena });
+        }
+
+        // Funciones anteriores
         function modifyScore(team, val) {
             let newScore = (currentData[team] || 0) + val;
             if (newScore < 0) newScore = 0;
@@ -132,7 +170,7 @@
 
         function resetAll() {
             if (confirm('¿Seguro que deseas reiniciar el partido?')) {
-                marcadorRef.set({
+                marcadorRef.update({
                     local: 0,
                     visitor: 0,
                     cuarto: "1ER CUARTO",
